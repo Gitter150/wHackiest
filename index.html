@@ -219,7 +219,7 @@
                     <tr>
                         <td>At Birth</td>
                         <td>BCG, OPV-0, Hepatitis B</td>
-                        <td><input type="checkbox" disabled></td>
+                        <td><input type="checkbox" ></td>
                     </tr>
                     <tr>
                         <td>6 weeks of age</td>
@@ -332,10 +332,17 @@
 
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard-section').classList.remove('hidden');
-
     if (role === 'doctor') {
+        resetSections();
+        // document.getElementById('client-id-section').classList.remove('hidden');
+        // document.getElementById('main-dashboard').classList.remove('hidden');
+        // document.getElementById('update-vaccine-btn').classList.remove('hidden'); // Show "Update Vaccine" button for doctors 
         document.getElementById('client-id-section').classList.remove('hidden');
         document.getElementById('main-dashboard').classList.add('hidden');
+    } else if (role === 'hospital') {
+        document.getElementById('client-id-section').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+        showDoctorsList(); // Show list of doctors for the hospital role
     } else {
         document.getElementById('main-dashboard').classList.remove('hidden');
     }
@@ -346,6 +353,22 @@
 
     // Temporary in-memory user storage
     const users = [];
+
+
+    function showDoctorsList() {
+    const doctorListSection = document.createElement('div');
+    doctorListSection.id = 'doctor-list-section';
+    doctorListSection.innerHTML = `
+        <h2>Available Doctors</h2>
+        <ul id="doctor-list">
+            ${users
+                .filter(user => user.role === 'doctor')
+                .map(doctor => `<li>${doctor.username}</li>`)
+                .join('')}
+        </ul>
+    `;
+    document.getElementById('dashboard-section').appendChild(doctorListSection);
+}
 
     function signup() {
     const username = document.getElementById('signup-username').value;
@@ -395,24 +418,44 @@
 
         document.getElementById('client-id-section').classList.add('hidden');
         document.getElementById('main-dashboard').classList.remove('hidden');
+   
+        if (userData.role === 'doctor') {
+        document.getElementById('update-vaccine-btn').classList.remove('hidden');
+    }
+
+
+
     }
 
     function showSection(section) {
-        document.getElementById('profile-section').classList.add('hidden');
-        document.getElementById('vaccine-history-section').classList.add('hidden');
-        document.getElementById('update-vaccine-section').classList.add('hidden');
-        document.getElementById('doctor-edits-section').classList.add('hidden');
-        document.getElementById('schedule-section').classList.add('hidden');
-
+        // document.getElementById('profile-section').classList.add('hidden');
+        // document.getElementById('vaccine-history-section').classList.add('hidden');
+        // document.getElementById('update-vaccine-section').classList.add('hidden');
+        // document.getElementById('doctor-edits-section').classList.add('hidden');
+        // document.getElementById('schedule-section').classList.add('hidden');
+        resetSections();
         document.getElementById(`${section}-section`).classList.remove('hidden');
     }
 
     function logout() {
         userData = { username: '', role: '', vaccines: [], doctorEdits: [] };
+        clientUniqueId = '';
+        resetSections();
         document.getElementById('dashboard-section').classList.add('hidden');
         document.getElementById('login-section').classList.remove('hidden');
         alert('You have been logged out.');
     }
+
+    function resetSections() {
+    // Hide all dashboard-related sections
+    document.getElementById('client-id-section').classList.add('hidden');
+    document.getElementById('main-dashboard').classList.add('hidden');
+    document.getElementById('profile-section').classList.add('hidden');
+    document.getElementById('vaccine-history-section').classList.add('hidden');
+    document.getElementById('update-vaccine-section').classList.add('hidden');
+    document.getElementById('doctor-edits-section').classList.add('hidden');
+    document.getElementById('schedule-section').classList.add('hidden');
+}
 
     function updateVaccine() {
         const name = document.getElementById('vaccine-name').value;
@@ -441,7 +484,24 @@
     function goBackToClientSelection() {
         document.getElementById('main-dashboard').classList.add('hidden');
         document.getElementById('client-id-section').classList.remove('hidden');
+   
+        function disableScheduleCheckboxesForClient() {
+    if (userData.role === 'client') {
+        const checkboxes = document.querySelectorAll('#schedule-section input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.disabled = true;
+        });
     }
+}
+
+// Call the function after login to ensure checkboxes are disabled if the user is a client
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-section').addEventListener('submit', disableScheduleCheckboxesForClient);
+});
+
+   
+   
+   }
 </script>
 </body>
 </html>
